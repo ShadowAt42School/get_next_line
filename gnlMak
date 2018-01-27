@@ -1,0 +1,54 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: maghayev <maghayev@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2017/12/01 21:51:41 by maghayev          #+#    #+#              #
+#    Updated: 2018/01/25 04:06:07 by maghayev         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+NAME = getnext
+CC = gcc
+CFLAGS =  -g
+DEPS = get_next_line.h CMemLeak.h
+SRC  = get_next_line.c gnl7_3.c
+LIBS = ./libft/
+LIBA = $(LIBS)/libft.a
+
+OBJECT = $(SRC:.c=.o)
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+all: $(NAME)
+
+$(NAME): ftlib $(OBJECT)
+	$(CC) $(CFLAGS) $(OBJECT) $(LIBA) -o $@
+	@echo "Finished!"
+
+ftlib:
+	@echo $(LIBS)
+	@echo "Initiating Protocol: LibBuild.."
+	@make -C $(LIBS)
+
+ftlibclean:
+	@echo "Initiating Protocal: LibFtClean.."
+	@make clean -C $(LIBS)
+
+ftlibfclean:
+	@echo "Initiating Protocal: LibFtDestruction.."
+	@make fclean -C $(LIBS)
+
+clean: ftlibclean
+	@echo "Cleanning..."
+	@/bin/rm -f $(OBJECT)
+	@echo "Cleaned"
+
+fclean: clean ftlibfclean
+	@/bin/rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re
