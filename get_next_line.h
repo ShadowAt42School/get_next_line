@@ -6,7 +6,7 @@
 /*   By: maghayev <maghayev@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/22 04:23:10 by maghayev          #+#    #+#             */
-/*   Updated: 2018/01/27 04:13:17 by maghayev         ###   ########.fr       */
+/*   Updated: 2018/02/02 20:10:46 by maghayev         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,16 @@
 # include "libft/libft.h"
 # include <fcntl.h>
 
-# define BUFF_SIZE 1000
+# define BUFF_SIZE 10
+# define INIT 3
+# define DONE 2
 
 typedef struct	s_linemeta
 {
 	int		file_d;
 	char	*str_rem;
-	char	*nmp;
+	char	*nl;
+	int		bread;
 	int		rem_wid;
 	int		npos;
 }				t_linemeta;
@@ -29,7 +32,8 @@ typedef struct	s_linemeta
 typedef struct	s_buffread
 {
 	int		byread;
-	char	*read_l;
+	char	*nl;
+	char	read_l[BUFF_SIZE];
 	char	*nline;
 }				t_buffread;
 
@@ -43,6 +47,6 @@ typedef struct	s_linec
 int				get_next_line(const int fd, char **line);
 t_bool			clean_up(t_linemeta *lnmeta);
 t_bool			read_file(t_linemeta *lnmeta);
-int				create_node(int fd, char **line, t_list **lnlist);
-int				check_line(t_linemeta *lnmeta, char **line);
+t_bool			create_node(int fd, t_list **lnlist);
+t_bool			check_line(t_linemeta *lnmeta, char **line);
 #endif

@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: maghayev <maghayev@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/01/22 04:22:57 by maghayev          #+#    #+#             */
-/*   Updated: 2018/01/27 07:09:03 by maghayev         ###   ########.fr       */
+/*   Created: 2018/02/01 20:33:02 by maghayev          #+#    #+#             */
+/*   Updated: 2018/02/02 08:05:35 by maghayev         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,60 +23,62 @@ t_bool		clean_up(t_linemeta *lnmeta)
 	return (TRUE);
 }
 
-int			check_line(t_linemeta *lnmeta, char **line)
-{
-	t_linec		linc;
-
-	ft_bzero(&linc, sizeof(t_linec));
-	linc.pline = ft_memchr(lnmeta->str_rem, '\n', lnmeta->rem_wid);
-	if (!linc.pline && (linc.iread = read_file(lnmeta)) == TRUE)
-		return (check_line(lnmeta, line));
-	if (!linc.pline && (linc.iread == FALSE || (linc.iread == DONE &&
-													lnmeta->rem_wid == 0)))
-	{
-		clean_up(lnmeta);
-		if (linc.iread == DONE && lnmeta->rem_wid == 0)
-			return (0);
-		return (-1);
-	}
-	linc.npos = (linc.pline ? linc.pline - lnmeta->str_rem : lnmeta->rem_wid);
-	free(*line);
-	*line = ft_memcpy(ft_strnew(linc.npos), lnmeta->str_rem, linc.npos);
-	linc.pline = (linc.pline ?
-	ft_strsub(lnmeta->str_rem, linc.npos + 1, lnmeta->rem_wid - (linc.npos + 1))
-		: NULL);
-	lnmeta->rem_wid -= (linc.pline ? linc.npos + 1 : lnmeta->rem_wid);
-	(linc.pline ? ft_strdel(&lnmeta->str_rem) : 0);
-	lnmeta->str_rem = linc.pline ? linc.pline : lnmeta->str_rem;
-	(!linc.pline ? ft_strdel(&lnmeta->str_rem) : 0);
-	return (1);
-}
-
 t_bool		read_file(t_linemeta *lnmeta)
 {
 	t_buffread	lnread;
 
 	ft_bzero(&lnread, sizeof(t_buffread));
-	lnread.read_l = ft_memalloc(BUFF_SIZE);
-	if ((lnread.byread = read(lnmeta->file_d, lnread.read_l, BUFF_SIZE)) <= 0)
+	if ((lnmeta->bread = read(lnmeta->file_d, lnread.read_l, BUFF_SIZE)) <= 0)
 	{
-		ft_strdel(&lnread.read_l);
-		if (lnread.byread == 0)
+		if (lnmeta->bread == 0)
 			return (DONE);
 		clean_up(lnmeta);
 		return (FALSE);
 	}
+	lnread.nl = (char*)ft_memchr(lnread.read_l, '\n', lnmeta->bread);
 	if (!lnmeta->str_rem)
-		lnmeta->str_rem = (char*)ft_memdup(lnread.read_l, lnread.byread);
+		lnmeta->str_rem = (char*)ft_memdup(lnread.read_l, lnmeta->bread);
 	else
 		lnmeta->str_rem = (char*)ft_memjoin(
-				lnmeta->str_rem, lnread.read_l, lnmeta->rem_wid, lnread.byread);
-	lnmeta->rem_wid += lnread.byread;
-	ft_strdel(&lnread.read_l);
+				lnmeta->str_rem, lnread.read_l, lnmeta->rem_wid, lnmeta->bread);
+	if (lnread.nl)
+		lnmeta->nl = lnmeta->str_rem + lnmeta->rem_wid +
+			(lnread.nl - lnread.read_l);
+	else
+		lnmeta->nl = NULL;
+	lnmeta->rem_wid += lnmeta->bread;
 	return (TRUE);
 }
 
-int			create_node(int fd, char **line, t_list **lnlist)
+t_bool		check_line(t_linemeta *lnmeta, char **line)
+{
+	t_bool	status;
+	int		cpylen;
+
+	while (!lnmeta->nl && !(lnmeta->nl = ft_memchr(
+	lnmeta->str_rem, '\n', lnmeta->rem_wid)))
+	{
+		status = read_file(lnmeta);
+		if (!status)
+			return (FALSE);
+		if (status == DONE)
+			break ;
+	}
+	cpylen = (lnmeta->nl ? lnmeta->nl - lnmeta->str_rem : lnmeta->rem_wid);
+	if (cpylen == 0 && lnmeta->rem_wid == 0)
+	{
+		clean_up(lnmeta);
+		return (DONE);
+	}
+	*line = ft_memcpy(ft_strnew(cpylen), lnmeta->str_rem, cpylen);
+	lnmeta->rem_wid -= cpylen + (lnmeta->nl ? 1 : 0);
+	lnmeta->str_rem = ft_memshrink(lnmeta->str_rem,
+			lnmeta->str_rem + cpylen + (lnmeta->nl ? 1 : 0), lnmeta->rem_wid);
+	lnmeta->nl = NULL;
+	return (TRUE);
+}
+
+t_bool		create_node(int fd, t_list **lnlist)
 {
 	t_linemeta		*lnmeta;
 	t_bool			readstatus;
@@ -85,19 +87,16 @@ int			create_node(int fd, char **line, t_list **lnlist)
 	lnmeta = (t_linemeta*)ft_memalloc(sizeof(t_linemeta));
 	lnmeta->file_d = fd;
 	readstatus = read_file(lnmeta);
-	if (readstatus == FALSE)
-		return (FALSE);
-	if (readstatus == DONE)
+	if (readstatus == FALSE || readstatus == DONE)
 	{
-		check_line(lnmeta, line);
-		*line = NULL;
-		return (DONE);
+		if (readstatus == DONE)
+			return (DONE);
+		return (FALSE);
 	}
-	*line = ft_memalloc(0);
 	newlist = ft_lstnew(lnmeta, sizeof(t_linemeta));
 	ft_lstadd(lnlist, newlist);
 	ft_memdel((void**)&lnmeta);
-	return (TRUE);
+	return (INIT);
 }
 
 int			get_next_line(const int fd, char **line)
@@ -114,14 +113,16 @@ int			get_next_line(const int fd, char **line)
 	if (lnlistcpy)
 	{
 		checkstatus = check_line((t_linemeta*)lnlistcpy->content, line);
-		if (checkstatus <= 0)
-			lnlist = ft_lstanydel(lnlist, lnlistcpy->content);
-		return (checkstatus);
+		if (checkstatus == DONE || checkstatus == FALSE)
+			lnlist = ft_lstanydel(lnlist, lnlistcpy);
 	}
-	checkstatus = create_node(fd, line, &lnlist);
+	else
+		checkstatus = create_node(fd, &lnlist);
 	if (checkstatus == FALSE)
 		return (-1);
 	if (checkstatus == DONE)
 		return (0);
+	if (checkstatus == TRUE)
+		return (1);
 	return (get_next_line(fd, line));
 }

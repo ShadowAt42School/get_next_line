@@ -6,7 +6,7 @@
 #    By: maghayev <maghayev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2017/12/01 21:51:41 by maghayev          #+#    #+#              #
-#    Updated: 2018/01/26 02:00:05 by maghayev         ###   ########.fr        #
+#    Updated: 2018/02/02 03:10:30 by maghayev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 NAME = libft.a
@@ -18,7 +18,7 @@ CFLAGS = -Wall -Wextra -Werror
 DEPS = libft.h
 SRC  = ft_bzero.c  ft_memcpy.c ft_memset.c ft_memccpy.c ft_memchr.c \
 		ft_memmove.c ft_memcmp.c ft_memalloc.c ft_memdel.c ft_memrealloc.c \
-		ft_memjoin.c ft_memdup.c \
+		ft_memjoin.c ft_memdup.c ft_memshrink.c \
 		\
 		ft_putchar.c ft_putstr.c ft_putnbr.c ft_print_byte.c \
 		ft_object_bit_print.c ft_putendl.c ft_putchar_fd.c ft_putstr_fd.c \

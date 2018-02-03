@@ -6,7 +6,7 @@
 /*   By: maghayev <maghayev@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/12/01 20:18:02 by maghayev          #+#    #+#             */
-/*   Updated: 2018/01/26 00:07:33 by maghayev         ###   ########.fr       */
+/*   Updated: 2018/02/02 03:10:16 by maghayev         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ typedef struct	s_list
 # define INT_MAX_STR "2147483647"
 # define TRUE 1
 # define FALSE 0
-# define DONE 2
 
 /*
 ** Casts
@@ -151,6 +150,7 @@ void			*ft_memrealloc(
 							void *content, size_t cur_size, size_t des_size);
 void			*ft_memjoin(void *sh, const void *sn, size_t shl, size_t snh);
 void			*ft_memdup(const void *cont, size_t size);
+void			*ft_memshrink(void *area, void *start, size_t len);
 
 /*
 **	C Type Checks
